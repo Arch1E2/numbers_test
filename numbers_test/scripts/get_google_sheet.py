@@ -245,7 +245,7 @@ while not e.wait(polling_interval):
         #create total cost in rubles rate * total cost in dollars / nominal
         valute_nominal = int(dollar_rate[1])
         total_cost_in_valute = int(row[2])
-        cost_float = dollar_rate[0] * total_cost_in_valute / valute_nominal
+        cost_float = float(dollar_rate[0]) * total_cost_in_valute / valute_nominal
         total_cost_in_rubles = int(cost_float.split(',')[0])
         total_cost_in_rubles_after_comma = int(cost_float.split(',')[0])
                                
