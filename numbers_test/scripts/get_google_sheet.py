@@ -1,4 +1,5 @@
 from __future__ import print_function
+from unicodedata import decimal
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -17,6 +18,11 @@ DB_USER = os.environ.get('POSTGRES_USER')
 DB_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
 DB_HOST = 'postgres'
 DB_PORT = '5432'
+# DB_NAME = 'numbers_test'
+# DB_USER = 'postgres'
+# DB_PASSWORD = 'cydvbb3qkc'
+# DB_HOST = 'localhost'
+# DB_PORT = '5432'
 
 TG_BOT_TOKEN = os.environ.get('TG_BOT_TOKEN')
 TG_BOT_CHAT_ID = os.environ.get('TG_BOT_CHAT_ID')
@@ -81,9 +87,9 @@ def get_currency_rates(currency_ISO="USD"):
 
     for child in root:
         if child.tag == 'Valute':
-            currencies[child.find('CharCode').text] = (child.find('Value').text, child.find('Nominal').text)
+            currencies[child.find('CharCode').text] = [child.find('Value').text, child.find('Nominal').text]
 
-    #return tuple with currency rate and currency nominal
+    #return list with currency rate and currency nominal
     return currencies[currency_ISO]
 
 
@@ -154,9 +160,12 @@ def add_order_to_base(index_in_table, order_id, incoming_date, total_cost_in_dol
     cur.execute("""INSERT INTO app_order (index_in_table, order_id, incoming_date, total_cost_in_dollars, total_cost_in_rubles, total_cost_in_rubles_after_comma)
                 VALUES (%s, %s, %s, %s, %s, %s);""",
                 (index_in_table, order_id, incoming_date, total_cost_in_dollars, total_cost_in_rubles, total_cost_in_rubles_after_comma))
+
+    #conn commit    
+    conn.commit()
     
     #add bot message to db
-    cur.execute("""INSERT INTO app_botmessage (order_id_id, message_send_date)
+    cur.execute("""INSERT INTO app_botmessage (order_id, message_send_date)
                 VALUES (%s, %s);""",
                 (order_id, None))
     #conn commit
@@ -245,9 +254,10 @@ while not e.wait(polling_interval):
         #create total cost in rubles rate * total cost in dollars / nominal
         valute_nominal = int(dollar_rate[1])
         total_cost_in_valute = int(row[2])
-        cost_float = float(dollar_rate[0]) * total_cost_in_valute / valute_nominal
-        total_cost_in_rubles = int(cost_float.split(',')[0])
-        total_cost_in_rubles_after_comma = int(cost_float.split(',')[0])
+        fl = float('.'.join(dollar_rate[0].split(',')))
+        cost_float = fl * total_cost_in_valute / valute_nominal
+        total_cost_in_rubles = int(str(cost_float).split('.')[0])
+        total_cost_in_rubles_after_comma = int(str(cost_float).split('.')[1][0:3])
                                
         row.append(total_cost_in_rubles)
         row.append(total_cost_in_rubles_after_comma)
@@ -272,7 +282,6 @@ while not e.wait(polling_interval):
             new_orders_count += 1
 
     #delete killled orders from db
-    print(sheet_order_ids)
     delete_rows(sheet_order_ids)
     
     orders_for_message = []
