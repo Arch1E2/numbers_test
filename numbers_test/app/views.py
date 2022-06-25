@@ -8,13 +8,14 @@ def orders(request):
     orders = Order.objects.all()
     result = []
     for order in orders:
-        order_total_cost_in_rubles = str(order.total_cost_in_rubles) + "," + str(order.total_cost_in_rubles_after_comma)
+        total_cost = [order.total_cost_in_rubles, order.total_cost_in_rubles_after_comma]
+        order_total_cost_in_rubles = ','.join(total_cost)
         result.append({
             'index_in_table': order.index_in_table,
             'order_id': order.order_id,
             'incoming_date': order.incoming_date,
             'total_cost_in_dollars': order.total_cost_in_dollars,
-            'total_cost_in_rubles': float(order.total_cost_in_rubles),
+            'total_cost_in_rubles': order_total_cost_in_rubles,
         })
     return JsonResponse(result, safe=False)
     
