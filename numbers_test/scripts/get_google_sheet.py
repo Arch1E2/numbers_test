@@ -243,12 +243,11 @@ while not e.wait(polling_interval):
     for row in sheet_values[1: len(sheet_values)]:
         sheet_order_ids.append(row[1])
         #create total cost in rubles rate * total cost in dollars / nominal
-        float_first_part = int(dollar_rate[0].split(',')[0])
-        float_second_part = int(dollar_rate[0].split(',')[1])
         valute_nominal = int(dollar_rate[1])
         total_cost_in_valute = int(row[2])
-        total_cost_in_rubles = (float_first_part * total_cost_in_valute / valute_nominal)
-        total_cost_in_rubles_after_comma = (float_second_part * total_cost_in_valute / valute_nominal)
+        cost_float = dollar_rate[0] * total_cost_in_valute / valute_nominal
+        total_cost_in_rubles = int(cost_float.split(',')[0])
+        total_cost_in_rubles_after_comma = int(cost_float.split(',')[0])
                                
         row.append(total_cost_in_rubles)
         row.append(total_cost_in_rubles_after_comma)
