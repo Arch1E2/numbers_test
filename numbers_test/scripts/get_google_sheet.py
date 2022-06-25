@@ -12,21 +12,25 @@ import psycopg2
 import threading
 import os
 
-
+#DB_Config
 DB_NAME = os.environ.get('POSTGRES_NAME')
 DB_USER = os.environ.get('POSTGRES_USER')
 DB_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
 DB_HOST = 'postgres'
 DB_PORT = '5432'
 
+#TG_BOT_Config
 TG_BOT_TOKEN = os.environ.get('TG_BOT_TOKEN')
 TG_BOT_CHAT_ID = os.environ.get('TG_BOT_CHAT_ID')
 
+#cache for currency rates
 last_currency_check_date = None
 last_currencies = None
 
+#script polling
 polling_interval = int(os.environ.get('POLLING_INTERVAL'))
 
+#send message to telegram bot
 def send_message(orders):
     text = "Истек срок поставки по заказам:\n"
     for order in orders:
@@ -40,7 +44,7 @@ def send_message(orders):
     except:
         print("Error sending message")
 
-
+#get message info from db
 def get_bot_message_from_base(order):
     # connect to db
     conn = None
@@ -49,7 +53,6 @@ def get_bot_message_from_base(order):
     except:
         return "Error connecting to DB"
 
-    # get order from db
     try:
         cur = conn.cursor()
         cur.execute("SELECT * FROM app_botmessage WHERE order_id = %s", (order[1],))
@@ -63,7 +66,6 @@ def get_bot_message_from_base(order):
     # return order
     return order
     
-
 
 def get_currency_rates(currency_ISO="USD"):
     # date today format DD/MM/YYYY
@@ -87,7 +89,7 @@ def get_currency_rates(currency_ISO="USD"):
     #return list with currency rate and currency nominal
     return currencies[currency_ISO]
 
-
+#sheet with api_key
 def get_google_sheet():
     # If modifying these scopes, delete the file token.json.
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
@@ -119,7 +121,7 @@ def get_google_sheet():
     except HttpError as err:
         return 'API returned error'
         
-
+#check if order exists in db
 def check_order_in_base(order_id):
     # connect to db
     conn = None
@@ -142,6 +144,7 @@ def check_order_in_base(order_id):
     # return order
     return order
 
+#create order in db
 def add_order_to_base(index_in_table, order_id, incoming_date, total_cost_in_dollars, total_cost_in_rubles, total_cost_in_rubles_after_comma):
     # connect to db
     conn = None
@@ -170,6 +173,7 @@ def add_order_to_base(index_in_table, order_id, incoming_date, total_cost_in_dol
     # close connection
     conn.close()  
 
+#update order in db
 def update_order_in_base(index_in_table, order_id, incoming_date, total_cost_in_dollars, total_cost_in_rubles, total_cost_in_rubles_after_comma):
     # connect to db
     conn = None
@@ -191,6 +195,7 @@ def update_order_in_base(index_in_table, order_id, incoming_date, total_cost_in_
     # close connection
     conn.close()
 
+#check if orders in sheet are differnt from orders in db
 def check_order_data(order, row):
     if (order[-2] != int(row[0]) or
         datetime.datetime.strptime(row[3], '%d.%m.%Y').date() != order[2] or
@@ -201,7 +206,7 @@ def check_order_data(order, row):
     else: 
         return True
 
-
+#delete order from db
 def delete_rows(order_ids):
     # connect to db
     conn = None
