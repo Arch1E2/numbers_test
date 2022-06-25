@@ -1,0 +1,67 @@
+services:
+  django:
+    container_name: django
+    restart: always
+    build:
+      context: .
+      dockerfile: ./compose/django/Dockerfile
+    volumes:
+      - ./back:/my_proj
+    ports:
+      - 8000:8000
+    expose:
+      - 8000
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+
+  react:
+    container_name: react
+    restart: always
+    build:
+      context: .
+      dockerfile: ./compose/react/Dockerfile
+    volumes:
+      - ./front:/react_proj
+    ports:
+      - 3000:3000
+    expose:
+      - 3000
+
+  postgres:
+    image: postgres
+    volumes:
+      - ./db:/db
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_DB=numbers_test
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+
+  script:
+    container_name: script
+    restart: always
+    build:
+      context: .
+      dockerfile: ./compose/script/Dockerfile
+    volumes:
+      - ./script:/script
+    ports:
+      - 9000:9000
+    expose:
+      - 9000
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - TG_BOT_TOKEN=placeholder
+      - TG_BOT_CHAT_ID=placeholder
+    depends_on:
+      - postgres
+      - django
