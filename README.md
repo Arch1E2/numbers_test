@@ -2,5 +2,7 @@
 
 To start use Docker
 
-from directory with docker-compose.yml file print:
-  docker-compose up
+- first configure environment variables of services from docker-compose.yml
+
+- from directory with docker-compose.yml file print:
+    docker-compose up
