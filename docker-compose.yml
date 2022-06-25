@@ -14,7 +14,7 @@ services:
     depends_on:
       - postgres
     environment:
-      - POSTGRES_NAME=postgres
+      - POSTGRES_NAME=numbers_test
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
 
@@ -57,11 +57,12 @@ services:
     expose:
       - 9000
     environment:
-      - POSTGRES_NAME=postgres
+      - POSTGRES_NAME=numbers_test
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - TG_BOT_TOKEN=placeholder
       - TG_BOT_CHAT_ID=placeholder
+      - POLLING_INTERVAL=10
     depends_on:
       - postgres
       - django

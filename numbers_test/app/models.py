@@ -21,7 +21,7 @@ class CurrencyRate(models.Model):
 
 
 class BotMessage(models.Model):
-    order_id = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name="messages")
+    order_id = models.PositiveIntegerField()
     message_send_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):

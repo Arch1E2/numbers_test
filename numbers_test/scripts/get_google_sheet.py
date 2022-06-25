@@ -18,11 +18,6 @@ DB_USER = os.environ.get('POSTGRES_USER')
 DB_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
 DB_HOST = 'postgres'
 DB_PORT = '5432'
-# DB_NAME = 'numbers_test'
-# DB_USER = 'postgres'
-# DB_PASSWORD = 'cydvbb3qkc'
-# DB_HOST = 'localhost'
-# DB_PORT = '5432'
 
 TG_BOT_TOKEN = os.environ.get('TG_BOT_TOKEN')
 TG_BOT_CHAT_ID = os.environ.get('TG_BOT_CHAT_ID')
@@ -30,7 +25,7 @@ TG_BOT_CHAT_ID = os.environ.get('TG_BOT_CHAT_ID')
 last_currency_check_date = None
 last_currencies = None
 
-polling_interval = 1
+polling_interval = int(os.environ.get('POLLING_INTERVAL'))
 
 def send_message(orders):
     text = "Истек срок поставки по заказам:\n"
@@ -41,7 +36,7 @@ def send_message(orders):
 
         conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT)
         cur = conn.cursor()
-        cur.execute("UPDATE app_botmessage SET message_send_date = %s WHERE order_id_id IN %s", (datetime.datetime.now(), orders))
+        cur.execute("UPDATE app_botmessage SET message_send_date = %s WHERE order_id IN %s", (datetime.datetime.now(), orders))
     except:
         print("Error sending message")
 
@@ -57,7 +52,7 @@ def get_bot_message_from_base(order):
     # get order from db
     try:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM app_botmessage WHERE order_id_id = %s", (order[1],))
+        cur.execute("SELECT * FROM app_botmessage WHERE order_id = %s", (order[1],))
         order = cur.fetchone()
     except:
         print("Error getting message from DB")
@@ -219,7 +214,7 @@ def delete_rows(order_ids):
     # delete rows from db
     cur = conn.cursor()
     cur.execute("""DELETE FROM app_order WHERE order_id NOT IN %s;""", (tuple(order_ids),))
-    cur.execute("""DELETE FROM app_botmessage WHERE order_id_id NOT IN %s;""", (tuple(order_ids),))
+    cur.execute("""DELETE FROM app_botmessage WHERE order_id NOT IN %s;""", (tuple(order_ids),))
     #connection commit
     conn.commit()
     # cursor close
